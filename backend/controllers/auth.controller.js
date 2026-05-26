@@ -78,9 +78,56 @@ const signup = async (req, res) => {
 };
 
 // ===== LOGIN USER ======================
-const login = async (req, res) => {};
+const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+    if (user && (await user.comparePassword(password))) {
+      const { accessToken, refreshToken } =  await generateToken(user._id);
+
+      await storeRefreshToken(user._id, refreshToken);
+      setCookies(res, accessToken, refreshToken);
+
+      res.status(200).json({
+        success: true,
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      });
+    }else {
+      res.status(401).json({message:"Invalid email or password"})
+    }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message:"Server error", error: error.message
+    })
+  }
+};
 
 // ===== LOGOUT USER ======================
-const logout = async (req, res) => {};
+const logout = async (req, res) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+    if (refreshToken) {
+      const decoded = jwt.verify(
+        refreshToken,
+        process.env.REFRESH_TOKEN_SECRET,
+      );
+      await redis.del(`refresh_token:${decoded.userId}`);
+    }
+
+    res.clearCookie("refreshToken");
+    res.clearCookie("accessToken");
+
+    res.status(200).json({
+      message: "Logout successfully!",
+    });
+  } catch (error) {
+    res.status(500).json({ message: "server error", error: error.message });
+  }
+};
 
 export { signup, login, logout };

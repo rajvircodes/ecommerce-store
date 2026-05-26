@@ -4,6 +4,7 @@ import express from "express";
 import connectDB from "./lib/db.js";
 import authRoutes from "./routes/auth.route.js";
 import morgan from "morgan";
+import cookieParser from "cookie-parser";
 const app = express();
 
 
@@ -16,6 +17,7 @@ const PORT = process.env.PORT || 500;
 // built middleware
 app.use(express.json())
 app.use(morgan("dev"));
+app.use(cookieParser())
 
 // custom middleware
 app.use("/api/auth/", authRoutes);
