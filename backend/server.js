@@ -1,9 +1,9 @@
 import dotenv from "dotenv";
-import express from "express";
-import morgan from "morgan";
-import connectDB from "./lib/db.js";
 dotenv.config();
+import express from "express";
+import connectDB from "./lib/db.js";
 import authRoutes from "./routes/auth.route.js";
+import morgan from "morgan";
 const app = express();
 
 
